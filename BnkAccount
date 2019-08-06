@@ -1,24 +1,24 @@
 class BankAccount:
+    print("Welcome to ParkDaddy's Banking System!") 
     
-    def __init__(self):
-        self.balance = 0
-        print('You are here to put money in or take money out...')
+    def __init__(self,owner,balance,choice):
+
+        self.owner = owner
+        self.balance = balance
+        self.choice = choice
         
-    def deposit(self):
-        amnt = float(input('Enter amount to be deposited: '))
-        self.balance += amnt
-        print('\nAmount deposited: ', amnt)
-        print('Net balance is: ', self.balance)
+    def deposit(self,money_in,depo):
+        self.money_in = money_in
+        self.balance += money_in
+        self.depo = depo
         
-    def withdraw(self):
-        amnt = float(input('Enter amount to be withdrawn: '))
-        if amnt > self.balance:
-            print('Insufficient funds')
-        else:
-            self.balance -= amnt
-            print('You withdrew: ', amnt)
-            print('New blance is ', self.balance)
+        while self.depo != 'N':
+            self.money_in = float(input('Deposit amount: '))
+            self.balance += money_in        
+            self.depo = input('Would you like to make another deposit? (Y OR N): ').upper()
+     
+        print('Your balance is now ${}'.format(self.balance))            
             
-bank = BankAccount()
-bank.deposit()
-bank.withdraw()
+b = BankAccount(input('Enter name: '), 0, input("Deposit or Withdraw?: ").lower())
+b.deposit(float(input('Deposit amount: ')),input('Would you like to make another deposit? (Y OR N): ').upper())
+# deposit 5 and then 200... WTF
