@@ -65,7 +65,32 @@ for container in movie_containers:
 test_df = pd.DataFrame({'MOVIE':names,'YEAR':years,'IMDB RATING':imdbRatings,'METASCORE':metaScores,'VOTES':votes})
 #=========================================================================================================================
 #==============================================The script for multiple pages==============================================
+# Changing the URL’s parameters:
+pages = [str(i) for i in range(1,5)]
+years_url = [str(i) for i in range(2000,2018)]
 
+# Controlling the crawl-rate:
+from time import sleep
+import time
+from random import randint
+# If we avoid hammering the server with tens of requests per second, then we are much less likely 
+# to get our IP address banned.***
+# To mimic human behavior, we’ll vary the amount of waiting time between requests by using the randint()...
+# we’ll clear the output after each iteration, and replace it with information about the most recent request...
+
+# Monitoring the loop as it’s still going:
+from IPython.core import display
+
+start_time = time.time()
+requests = 0
+for _ in range(5):
+    # a request would go here
+    requests+=1
+    sleep(randint(1,3))
+    current_time = time.time()
+    elapsed_time = current_time - start_time
+    print('Request: {}; Frequency: {}; Requests/s'.format(requests,requests/elapsed_time))
+display.clear_output(wait=True)
 
 
         
