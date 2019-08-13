@@ -108,6 +108,7 @@ import warnings as war
 # Piecing everything together...
 pages = [str(i) for i in range(1,5)]
 release_dates = [str(i) for i in range(2000,2018)]
+headers = {"Accept-Language": "en-US, en;q=0.5"}
 
 names = []
 years = []
@@ -115,14 +116,14 @@ IMDB = []
 META = []
 votes = []
 genres = []
-
+# end of get() response: '&ref_=adv_nxt'
 start_time = time.time()
 requests = 0
 
 for release_date in release_dates:
     for page in pages:
         response = get('https://www.imdb.com/search/title/?release_date=' + release_date + 
-                       '&sort=num_votes,desc&page=' + page + '&ref_=adv_nxt')
+                       '&sort=num_votes,desc&page=' + page, headers = headers)
         
         sleep(randint(8,15))
         requests += 1
@@ -159,7 +160,7 @@ for release_date in release_dates:
                 vote.append(int(vote))
                 
                 genre = container.find('span',class_="genre").text
-                genre = genre1.strip(" '\n")
+                genre = genre.strip(" '\n")
                 genres.append(genre)
                 
 movieRatings = pd.DataFrame({'Movie':names,'Year':years,'IMDB Rating':IMDB,'Meta Score Rating':META,
