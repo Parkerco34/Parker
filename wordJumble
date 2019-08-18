@@ -1,0 +1,35 @@
+class Jumble:
+    
+    def validWord(self, yourWord):
+
+        with open('C:/Users/parkd/Desktop/PYTHON/EnglishDictionary.txt') as englishDictionary:
+            word = englishDictionary.read()
+            #yourWord = input("Type a word to check if it's an actual English word?: ")
+            word_match = re.findall(r"\b{}\b".format(self.yourWord), word)
+            if self.yourWord in word_match:
+                print('"{}"'.format(self.yourWord) + ' is a word!')
+            else:
+                realWord = []
+                for str in self.perm(self.yourWord):
+                    if str in word_match:
+                        realWord.append(str)
+                print(realWord)
+                #print('\nThat is not a word.')
+#validWord(input("Type a word to check if it's an actual English word?: "))
+    
+    def perm(self, yourWord): 
+        self.yourWord = yourWord
+        
+        if len(self.yourWord) == 0:
+            return [' ']
+        lst = self.perm(self.yourWord[1:len(self.yourWord)])
+        combos = []
+        for i in range(0,len(lst)):
+            for j in range(0,len(self.yourWord)):
+                jumb = lst[i][0:j] + self.yourWord[0] + lst[i][j:len(self.yourWord) - 1]
+                if jumb not in combos:
+                    combos.append(jumb)
+        return combos
+
+jum = Jumble()
+jum.validWord(input('Enter your fucked up word here: ')) # ??????????????????
