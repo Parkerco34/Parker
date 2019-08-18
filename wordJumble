@@ -1,35 +1,38 @@
+yourWord = input('Enter your fucked up word here: ')
 class Jumble:
+    #yourWord = input('Enter your fucked up word here: ')
     
     def validWord(self, yourWord):
-
+        
         with open('C:/Users/parkd/Desktop/PYTHON/EnglishDictionary.txt') as englishDictionary:
             word = englishDictionary.read()
+            words = word.split('\n')
             #yourWord = input("Type a word to check if it's an actual English word?: ")
-            word_match = re.findall(r"\b{}\b".format(self.yourWord), word)
-            if self.yourWord in word_match:
-                print('"{}"'.format(self.yourWord) + ' is a word!')
-            else:
-                realWord = []
-                for str in self.perm(self.yourWord):
-                    if str in word_match:
+            #word_match = re.findall(r"\b{}\b".format(yourWord), word)
+            realWord = []
+            if yourWord not in words:
+                for str in jum.perm(yourWord):
+                    if str in words:
                         realWord.append(str)
                 print(realWord)
+            else:
+                print('"{}"'.format(yourWord) + ' is already a valid word!')
+                
                 #print('\nThat is not a word.')
 #validWord(input("Type a word to check if it's an actual English word?: "))
     
     def perm(self, yourWord): 
-        self.yourWord = yourWord
-        
-        if len(self.yourWord) == 0:
+        if len(yourWord) == 0:
             return [' ']
-        lst = self.perm(self.yourWord[1:len(self.yourWord)])
+        lst = self.perm(yourWord[1:len(yourWord)])
         combos = []
         for i in range(0,len(lst)):
-            for j in range(0,len(self.yourWord)):
-                jumb = lst[i][0:j] + self.yourWord[0] + lst[i][j:len(self.yourWord) - 1]
+            for j in range(0,len(yourWord)):
+                jumb = lst[i][0:j] + yourWord[0] + lst[i][j:len(yourWord) - 1]
                 if jumb not in combos:
                     combos.append(jumb)
         return combos
 
 jum = Jumble()
-jum.validWord(input('Enter your fucked up word here: ')) # ??????????????????
+jum.validWord(yourWord)
+jum.perm(yourWord)
