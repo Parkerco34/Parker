@@ -1,0 +1,21 @@
+import pandas as pd
+import numpy as np
+
+df = pd.read_excel()
+# summing some columns to add a total column:
+df['total'] = df['Jan'] + df['Feb'] + df['Mar']
+# column level analysis:
+# df["Jan"].sum(), df["Jan"].mean(),df["Jan"].min(),df["Jan"].max()
+
+# create a sum for the month and total columns:
+sumRow = df[['Jan','Feb','Mar','total']].sum()
+# if you want to add totals as a row:
+# (We need to transpose the data and convert the Series to a DataFrame so that it is easier to concat onto our existing data. )
+dfSum = pd.DataFrame(data=sumRow).T # TRANSPOSE: series to Dataframe
+# add all of our columns and then allow pandas to fill in the values that are missing:
+dfSum = dfSum.reindex(columns=df.columns)
+# Now that we have a nicely formatted DataFrame, we can add it to our existing one using:
+dfFinal = df.append(dfSum, ignore_index=True)
+dfFinal['account'] = dfFinal['account'].fillna(0).astype(int)
+
+# let’s try to add a state abbreviation to the data set:
