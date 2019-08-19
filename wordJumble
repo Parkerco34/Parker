@@ -4,7 +4,7 @@ class Jumble:
     
     def validWord(self, yourWord):
         
-        with open('C:/Users/parkd/Desktop/PYTHON/EnglishDictionary.txt') as englishDictionary:
+        with open('C:/Users/parkd/Desktop/PYTHON/en-US.dic') as englishDictionary:
             word = englishDictionary.read()
             words = word.split('\n')
             #yourWord = input("Type a word to check if it's an actual English word?: ")
@@ -36,3 +36,4 @@ class Jumble:
 jum = Jumble()
 jum.validWord(yourWord)
 jum.perm(yourWord)
+
