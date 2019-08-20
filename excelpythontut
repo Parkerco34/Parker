@@ -1,0 +1,12 @@
+import pandas as pd
+# EXAMPLE 1:
+# df = pd.DataFrame({'Score':[300,450,500,600,725], 'Name':['Alice','Brand','Tim','Mike','Rachel']})
+# df1 = pd.DataFrame({'Score':[300,400,500,600,700], 'Grade':['B','C','D','E','F']})
+# pd.merge_asof(df, df1, on='Score')  Does a left-join except that we match on nearest key rather than equal keys
+
+# EXAMPLE 2:
+df = pd.DataFrame({'Label':['ABC','DEF','JHK','LMN','OPQ'], 'TIN':['I1','I2','I3','I4','I5']})
+df1 = pd.DataFrame({'TIN':['I2','I3','I4'], 'VALUE':[200,500,900]})
+df2 = pd.DataFrame({'Label':['DEF','JHK','LMN'],'VALUE':[100,200,300]})
+df3 = pd.merge(df,df1)
+# Merges DataFrame objects by performing a database-style join operation by columns or indexes
