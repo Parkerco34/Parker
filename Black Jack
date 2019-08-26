@@ -1,0 +1,81 @@
+# =================================BLACK JACK (walkthrough from tutorial)==================================
+
+# Imports and Global Variables:
+import random as ra
+
+suits = ('Hearts','Diamonds','Clubs','Spades') # TUPLES
+ranks = ('Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Jack','Queen','King','Ace')
+values = {'Two':2,'Three':3,'Four':4,'Five':5,'Six':6,'Seven':7,'Eight':8,'Nine':9,'Ten':10,'Jack':10,'Queen':10,'King':10,
+          'Ace':11}
+playing = True
+
+# Class Definitions:
+class Card:  # Class describing each card
+    
+    def __init__(self,suit,rank): # The nature of a single card        
+        self.suit = suit
+        self.rank = rank
+        
+    def __str__(self): # Making the card real for you        
+        return f'{self.rank} of {self.suit}'
+    
+# instantiate all 52 unique card objects and add them to a LIST:
+class Deck:  # Class describing all the cards in the deck
+    
+    def __init__(self): # adding each card to the deck (MINFESTING THE DECK); no DECK parameter BECAUSE we don't want the user to                         # be able to change the nature of the deck  
+        self.deck = []
+        for suit in suits:
+            for rank in ranks:
+                self.deck.append(Card(suit,rank))
+                
+    def __str__(self):        
+        deck_comp = ''
+        for card in self.deck: # card is used in Hand class...
+            deck_comp += '\n' + card.__str__()
+        return 'The deck has :' + deck_comp    
+
+    def shuffle(self):        
+        ra.shuffle(self.deck) # Shuffles the deck, obviously... ( no return stmnt)
+        
+    def deal(self):    
+        single_card = self.deck.pop()
+        return single_card
+    
+#    def __len__(self):
+#        return len(self.deck) # Shows that we have 52 cards
+'''
+testDeck = Deck()
+testDeck.shuffle()
+print(testDeck)
+'''
+class Hand: # what cards are currently in someone's hand
+    def __init__(self):
+        self.cards = []
+        self.value = 0 # current SUM of the value for that HAND
+        self.aces = 0
+    
+    def add_card(self,card): # Card OBJECT
+        # card passed in from DECK.deal() --> single card object, where Card(suit,rank)
+        self.cards.append(card)
+        self.value += values[card.rank]  # passed thru as a KEY ; using rank to get value and adding the value to current value
+        
+    def adjust_for_aces(self):
+        pass
+
+testDeck = Deck()
+testDeck.shuffle()
+#Player
+testPlayer = Hand()
+'''
+pulled_card = testDeck.deal()
+print(pulled_card)
+testPlayer.add_card(pulled_card)
+print(testPlayer.value)
+'''
+testPlayer.add_card(testDeck.deal())
+print(testPlayer.value)
+
+
+
+
+
