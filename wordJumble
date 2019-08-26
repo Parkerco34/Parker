@@ -1,3 +1,4 @@
+# =============================WORD UNJUMBLER==================================
 yourWord = input('Enter your fucked up word here: ')
 class Jumble:
     #yourWord = input('Enter your fucked up word here: ')
@@ -5,23 +6,24 @@ class Jumble:
     def validWord(self, yourWord):
         
         with open('C:/Users/parkd/Desktop/PYTHON/en-US.dic') as englishDictionary:
-            word = englishDictionary.read()
-            words = word.split('\n')
-            #yourWord = input("Type a word to check if it's an actual English word?: ")
-            #word_match = re.findall(r"\b{}\b".format(yourWord), word)
+            word1 = englishDictionary.read()
+            words1 = word1.split('\n')
+            
+        with open('C:/Users/parkd/Desktop/PYTHON/english_dict.txt') as englishDict:
+            word2 = englishDict.read()
+            words2 = word2.split('\n')
+
             realWord = []
-            if yourWord not in words:
+            if yourWord not in (words1 or words2):
                 for str in jum.perm(yourWord):
-                    if str in words:
+                    if str in (words1 or words2):
                         realWord.append(str)
-                print(realWord)
+                print(realWord) 
             else:
                 print('"{}"'.format(yourWord) + ' is already a valid word!')
-                
-                #print('\nThat is not a word.')
-#validWord(input("Type a word to check if it's an actual English word?: "))
     
     def perm(self, yourWord): 
+        
         if len(yourWord) == 0:
             return [' ']
         lst = self.perm(yourWord[1:len(yourWord)])
@@ -36,4 +38,6 @@ class Jumble:
 jum = Jumble()
 jum.validWord(yourWord)
 jum.perm(yourWord)
+
+    
 
