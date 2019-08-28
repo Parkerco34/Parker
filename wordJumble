@@ -39,4 +39,4 @@ jum = Jumble()
 jum.validWord(yourWord)
 jum.perm(yourWord)
 https://www.scottaaronson.com/democritus/lec9.html
-
+https://www.preposterousuniverse.com/blog/2011/11/16/guest-post-tom-banks-on-probability-and-quantum-mechanics/
