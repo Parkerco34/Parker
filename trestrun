@@ -1,0 +1,17 @@
+import pandas as pd
+import win32com.client as win32
+from pathlib import Path
+
+df = pd.read_csv('//gen-filesrv-v01/MatthewO/Cory/Titanium Reports/September/9.13.19/ED BC_New.txt', sep='\t', error_bad_lines=False)
+
+out_file = Path.cwd() / "ED_BC New.xlsx"
+df.to_excel(out_file, index=False)
+
+xl = win32.gencache.EnsureDispatch('Excel.Application')
+xl.Visible=True
+xl.Workbooks.Open(out_file)
+bye = input('Press Enter to close excel: ')
+xl.Application.Quit()
+    
+
+
