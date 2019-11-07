@@ -1,0 +1,51 @@
+import pandas as pd
+import datetime as da
+
+
+def date(self):
+    calender = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    today = str(da.date.today())
+    
+    last_month = str(int(today[5:7]) - 1)
+    if int(last_month) < 10:
+        mnth = last_month.replace(last_month, '0' + last_month)
+    year = today[:4]
+    month = calender[int(mnth) - 1]
+    return mnth, year, month
+
+mnth, year, month = date()
+    
+class Performance_Report:  
+    
+    # Class Attributes
+    file_coast = '//gen-filesrv-v01/Manager Trackers/_Final_DTS/DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
+    file_nrs = '//gen-filesrv-v01/NRS/Reports/Final_DTS/2019 DTS/NRS_DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
+    file_rms = '//gen-filesrv-v01/RMS/Reports/Final_DTS/RMS_DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
+    file_epm = '//gen-filesrv-v01/EPM/Reports/Final DTS/DTS_{}_{}_{}_Final EPM.xlsx'.format(year,mnth, month)
+    file_mids = '//gen-filesrv-v01/Mid South/Reports/Final DTS/MIDS_DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
+    file_per = '//gen-filesrv-v01/PER/Final DTS/PER DTS Final - {} {}.xlsx'.format(month, year)
+    
+    files = [file_coast, file_nrs, file_rms, file_epm, file_mids, file_per]
+    
+    def __init__(self, summare, goalz, payerOne, payerTwo, awgs, feee):
+        self.summare = summare
+        self.goalz = goalz
+        self.payerOne = payerOne
+        self.payerTwo = payerTwo
+        self.awgs = awgs
+        self.feee = feee
+
+class dts:
+    
+    def get_file(doc):
+        
+        for file in doc.files:
+            summare = pd.read_excel(file, sheet_name='Summary', sep='\t')
+            goalz = pd.read_excel(file, sheet_name='Goals', sep='\t', skiprows=[0,1,2,3])
+            payerOne = pd.read_excel(file, sheet_name='RHB1CNT-Credited', sep='\t')
+            payerTwo = pd.read_excel(file, sheet_name='RHB2CNT - Credited', sep='\t')
+            awgs = pd.read_excel(file, sheet_name='AWG - Credited', sep='\t')
+            feee = pd.read_excel(file, sheet_name='FRONT(FEE) - Credited', sep='\t')
+            
+            
+
