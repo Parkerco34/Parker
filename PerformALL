@@ -1,0 +1,284 @@
+import pandas as pd
+import datetime as da
+
+calender = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 
+            'October', 'November', 'December']
+#today = str(da.date.today())
+today = input('Date (YYYY-MM-DD): ')
+
+def date1():
+    
+    last_month = str(int(today[5:7]) - 1)
+    if int(last_month) < 10:
+        mnth = last_month.replace(last_month, '0' + last_month)
+    year = today[:4]
+    month = calender[int(mnth) - 1]
+    return mnth, year, month
+
+mnth, year, month = date1()
+
+file_coast = '//gen-filesrv-v01/Manager Trackers/_Final_DTS/DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
+file_nrs = '//gen-filesrv-v01/NRS/Reports/Final_DTS/2019 DTS/NRS_DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
+file_rms = '//gen-filesrv-v01/RMS/Reports/Final_DTS/RMS_DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
+file_epm = '//gen-filesrv-v01/EPM/Reports/Final DTS/DTS_{}_{}_{}_Final EPM.xlsx'.format(year,mnth, month)
+file_mids = '//gen-filesrv-v01/Mid South/Reports/Final DTS/MIDS_DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
+file_per = '//gen-filesrv-v01/PER/Final DTS/PER DTS Final - {} {}.xlsx'.format(month, year)
+
+files = [file_coast, file_nrs, file_rms, file_epm, file_mids, file_per]
+
+# COAST
+summare = pd.read_excel(files[0], sheet_name='Summary', sep='\t')
+goalz = pd.read_excel(files[0], sheet_name='Goals', sep='\t', skiprows=[0,1,2,3])
+payerOne = pd.read_excel(files[0], sheet_name='RHB1CNT-Credited', sep='\t')
+payerTwo = pd.read_excel(files[0], sheet_name='RHB2CNT - Credited', sep='\t')
+awgs = pd.read_excel(files[0], sheet_name='AWG - Credited', sep='\t')
+feee = pd.read_excel(files[0], sheet_name='FRONT(FEE) - Credited', sep='\t')
+
+# NRS
+summare = pd.read_excel(files[1], sheet_name='Summary', sep='\t', skiprows=[0,1,2,3])
+goalz = pd.read_excel(files[1], sheet_name='Goals', sep='\t', skiprows=[0,1,2])
+payerOne = pd.read_excel(files[1], sheet_name='RHB1CNT - Credited', sep='\t')
+payerTwo = pd.read_excel(files[1], sheet_name='RHB2CNT - Credited', sep='\t')
+awgs = pd.read_excel(files[1], sheet_name='AWG - Credited', sep='\t')
+feee = pd.read_excel(files[1], sheet_name='Data', sep='\t')
+
+
+# RMS
+summare = pd.read_excel(files[2], sheet_name='Summary', sep='\t', skiprows=[0,1,2,3])
+goalz = pd.read_excel(files[2], sheet_name='Goals', sep='\t', skiprows=[0,1])
+payerOne = pd.read_excel(files[2], sheet_name='RHB1CNT - Credited', sep='\t')
+payerTwo = pd.read_excel(files[2], sheet_name='RHB2CNT - Credited', sep='\t')
+awgs = pd.read_excel(files[2], sheet_name='AWG - Credited', sep='\t')
+feee = pd.read_excel(files[2], sheet_name='Data', sep='\t')
+
+# PER
+summare = pd.read_excel(files[5], sheet_name='Summary', sep='\t')
+goalz = pd.read_excel(files[5], sheet_name='Goals', sep='\t', skiprows=[0,1,2,3,4])
+payerOne = pd.read_excel(files[5], sheet_name='RHB1CNT-Credited', sep='\t')
+payerTwo = pd.read_excel(files[5], sheet_name='RHB2CNT - Credited', sep='\t')
+awgs = pd.read_excel(files[5], sheet_name='AWG - Credited', sep='\t')
+feee = pd.read_excel(files[5], sheet_name='STATS - Credited', sep='\t')
+
+# EPM
+summare = pd.read_excel(files[3], sheet_name='Summary', sep='\t')
+goalz = pd.read_excel(files[3], sheet_name='Goals', sep='\t', skiprows=[0,1,2,3])
+payerOne = pd.read_excel(files[3], sheet_name='RHB1CNT-Credited', sep='\t')
+payerTwo = pd.read_excel(files[3], sheet_name='RHB2CNT - Credited', sep='\t')
+awgs = pd.read_excel(files[3], sheet_name='AWG - Credited', sep='\t')
+feee = pd.read_excel(files[3], sheet_name='STATS - Credited', sep='\t')
+
+
+# MIDS
+summare = pd.read_excel(files[4], sheet_name='Summary', sep='\t')
+goalz = pd.read_excel(files[4], sheet_name='Goals', sep='\t', skiprows=[0,1,2])
+payerOne = pd.read_excel(files[4], sheet_name='RHB1CNT-Credited', sep='\t')
+payerTwo = pd.read_excel(files[4], sheet_name='RHB2CNT - Credited', sep='\t')
+awgs = pd.read_excel(files[4], sheet_name='AWG - Credited', sep='\t')
+feee = pd.read_excel(files[4], sheet_name='STATS - Credited', sep='\t')
+
+
+summary = summare.fillna(0)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+goals = goalz.fillna(0)
+payer1 = payerOne.fillna(0)
+payer1['Titanium ID'] = payer1['ZZUT1BORID']
+payer1['Front Line Fee'] = payer1['Aggregate_11']
+payer2 = payerTwo.fillna(0)
+payer2['Titanium ID'] = payer2['ZZUT1BORID']
+payer2['Front Line Fee'] = payer2['Aggregate_11']
+awg = awgs.fillna(0)
+awg['Titanium ID'] = awg['ZZUT1BORID']
+awg['Front Line Fee'] = awg['Aggregate_11']
+fee = feee.fillna(0)
+fee['Titanium ID'] = fee['Borrower_ID']
+fee['ID'] = fee['Collector']
+
+def employee_count(fte=[]):
+    goals['ID'] = goals['ID'].mask(goals['ID'].isin(goals['Unnamed: 4']),'0')
+    goals['ID'] = goals.loc[goals['F/L'] != 0]['ID']
+    goals['ID'] = goals['ID'].fillna(0)
+    
+    for emp in goals.loc[goals['Position'] != 0]['ID']:
+        if type(emp) == str and emp.startswith('1'):
+            fte.append(emp)
+    return len(fte)
+
+employees = employee_count()
+
+def employee_countNRS(fte=[]):
+    for emp in goals.loc[goals['F/L'] != 0]['ID']:
+        if type(emp) == str and emp.startswith('5'):
+            fte.append(emp)
+    return len(set(fte))
+
+employees = employee_countNRS()
+
+def employee_countRMS(fte=[]):
+    for emp in summary.loc[summary['Name'] != 'Total.']['ID']:
+        if type(emp) == str and emp.startswith('6'):
+            fte.append(emp)
+    return len(set(fte))
+
+employees = employee_countRMS()
+
+def employee_countPER(fte=[]):
+    for emp in goals.loc[goals['Name'] != 'Total.']['ID']:
+        if type(emp) == str and emp.startswith('7'):
+            fte.append(emp)
+    return len(set(fte))
+
+employees = employee_countPER()
+
+def employee_countEPM(fte=[]):
+    goals['ID'] = goals['ID'].mask(goals['ID'].isin(goals['MGR']),'0')
+    goals['ID'] = goals.loc[goals['F/L'] != 0]['ID']
+    goals['ID'] = goals['ID'].fillna(0)
+    
+    for emp in goals['ID']:
+        if type(emp) == str and emp.startswith('7') and emp != '7NBR' and emp != '7MBC':
+            fte.append(emp)
+    return len(fte)
+
+employees = employee_countEPM()
+
+def employee_countMIDS(fte=[]):
+    goals['ID'] = goals['ID'].mask(goals['ID'].isin(goals['MGR']),'0')
+    goals['ID'] = goals.loc[goals['F/L'] != 0]['ID']
+    goals['ID'] = goals['ID'].fillna(0)
+
+    for emp in goals.loc[goals['Position'] != 0]['ID']:
+        if type(emp) == str and emp.startswith('9'):
+            fte.append(emp)
+    return len(fte)
+
+dframes = [payer1, payer2, awg, fee]
+dts = pd.concat(dframes, axis=0, ignore_index=True).fillna(0)
+dts['ID'] = dts['ZZUT1USERID']
+dts['Company'] = dts['ZZUH1COMPANY']
+dts['Data_Point'] = dts['ZZUT1DATAPOINT']
+dts['Front Line Fee'] = dts['Aggregate_11']
+dts = dts[['ID', 'Company', 'Data_Point', 'Titanium ID', 'Front Line Fee']]
+
+# COAST*****************************************************************************************************************************************
+dtsC = dts.merge(summary, how='inner', on='ID')
+dtsC = dtsC[['Titanium ID', 'ID', 'Data_Point','Front Line Fee']]
+performanceC = dtsC.groupby(pd.Grouper('Data_Point')).count().reset_index()
+performanceC = performanceC.drop(['ID'], axis=1)
+performanceC = performanceC.drop([1], axis=0)
+dtsC_fee = dtsC.query("Data_Point == 'FRONT'")['Front Line Fee'].sum()
+dtsC_fee = round(dtsC_fee, 4)
+dtsC_fee = pd.Series(dtsC_fee)
+#***********************************************************************************************************************************************
+
+# NRS*******************************************************************************************************************************************
+dts_nrs = dts.merge(summary, how='inner', on='ID')
+dts_nrs = dts_nrs[['Titanium ID', 'Data_Point', 'Front Line Fee']]
+performanceN = dts_nrs.groupby(pd.Grouper('Data_Point')).count().reset_index()
+nrs_fee = fee.loc[fee['Data_Type'] == 'STATS']['NRS_Fee'].sum()
+nrs_fee = round(nrs_fee, 4)
+nrs_fee = pd.Series(nrs_fee)
+#***********************************************************************************************************************************************
+
+# RMS*******************************************************************************************************************************************
+dts['Front Line Fee'] = dts['RMS_Fee']
+dts_rms = dts.merge(summary, how='inner', on='ID')
+dts_rms = dts_rms[['Titanium ID','Data_Point']]
+performanceRMS = dts_rms.groupby(pd.Grouper('Data_Point')).count().reset_index()
+rms_fee = fee.merge(summary, how='inner', on='ID')
+rms_fee = rms_fee.loc[rms_fee['Data_Type'] == 'STATS']['RMS_Fee'].sum()
+rms_fee = pd.Series(rms_fee)
+#***********************************************************************************************************************************************
+
+# PER*******************************************************************************************************************************************
+per = dts.merge(summary, how='inner', on='ID')
+per = per[['Titanium ID', 'ID', 'Data_Point','Front Line Fee']]
+performanceP = per.groupby(pd.Grouper('Data_Point')).count().reset_index()
+performanceP = performanceP.drop(['ID'], axis=1)
+per_fee = summary['Frontline'][1]
+per_fee = round(per_fee, 4)
+per_fee = {'Fee': per_fee}
+per_fee = pd.Series(per_fee)
+#***********************************************************************************************************************************************
+
+#EPM********************************************************************************************************************************************
+summ = summary['ID'].drop_duplicates()
+epm = dts.merge(summ, how='inner', on='ID')
+performance = epm.groupby(pd.Grouper('Data_Point')).count().reset_index()
+performance = performance.drop(['ID', 'Company'], axis=1)
+ids = summary['ID']
+mgr = summary['Manager']
+summids = ids[~ids.isin(mgr)]
+epm_fee = fee.merge(summids, how='inner', on='ID')
+epm_fee = epm_fee.loc[epm_fee['Data_Type'] == 'STATS']['Front Line Fee'].sum()
+epm_fee = round(epm_fee, 4)*.152
+epm_fee = {'Fee': epm_fee}
+epm_fee = pd.Series(epm_fee)
+#MIDS*******************************************************************************************************************************************
+mids = dts.merge(summary, how='inner', on='ID')
+mids = mids[['Titanium ID', 'ID', 'Data_Point','Front Line Fee']]
+performance = mids.groupby(pd.Grouper('Data_Point')).count().reset_index()
+performance = performance[['Data_Point', 'Titanium ID']]
+ids = summary['ID']
+mgr = summary['Manager']
+summids = ids[~ids.isin(mgr)]
+summids = summids.reset_index()
+summids = summids.drop('index', axis=1)
+mids_fee = fee.merge(summids, how='inner', on='ID')
+mids_fee = mids_fee.loc[mids_fee['Data_Type'] == 'STATS']['Front Line Fee'].sum()
+mids_fee = round(mids_fee, 4)*.152
+mids_fee = {'Fee': mids_fee}
+mids_fee = pd.Series(mids_fee)
+#***********************************************************************************************************************************************
+# PerformancesALL
+################################################################################################################################################
+# Coast*****************************************************************************************************************************************
+performance = pd.concat([performanceC, dtsC_fee], axis=0).fillna(0)
+performance['Fee'] = performance[0]
+performance = performance[['Data_Point', 'Titanium ID', 'Fee']]
+performance = performance.reset_index()
+performance = performance.drop('index', axis=1)
+performance['Data_Point'][3] = 'FRONT'
+
+# NRS*******************************************************************************************************************************************
+performanceN = pd.concat([performanceN, nrs_fee], axis=0).fillna(0)
+performanceN = performanceN.reset_index()
+performanceN['Data_Point'][3] = 'FRONT'
+performanceN = performanceN.drop('index', axis=1)
+performanceN['Fee'] = performanceN[0]
+performanceN = performanceN.drop([0], axis=1)
+#***********************************************************************************************************************************************
+# RMS*******************************************************************************************************************************************
+performanceRMS = pd.concat([performanceRMS, rms_fee], axis=0).fillna(0)
+performanceRMS = performanceRMS.drop(3, axis=0)
+performanceRMS = performanceRMS.reset_index()
+performanceRMS = performanceRMS.drop('index', axis=1)
+performanceRMS['Fee'] = performanceRMS[0]
+performanceRMS = performanceRMS.drop(0, axis=1)
+performanceRMS = performanceRMS[['Data_Point', 'Titanium ID', 'Fee']]
+#***********************************************************************************************************************************************
+# PER*******************************************************************************************************************************************
+performance = pd.concat([performanceP, per_fee], axis=0).fillna(0)
+performance['Fee'] = performance[0]
+performance = performance[['Data_Point', 'Titanium ID', 'Fee']]
+performance = performance.reset_index()
+performance = performance.drop('index', axis=1)
+performance['Data_Point'][3] = 'FRONT'
+#***********************************************************************************************************************************************
+# EPM*******************************************************************************************************************************************
+summ = summary['ID'].drop_duplicates()
+performance = pd.concat([performance, epm_fee], axis=0).fillna(0)
+performance['Fee'] = performance[0]
+performance = performance[['Data_Point', 'Titanium ID', 'Fee']]
+performance = performance.drop([3], axis=0)
+performance = performance.reset_index()
+performance = performance.drop('index', axis=1)
+performance['Data_Point'][3] = 'FRONT'
+#***********************************************************************************************************************************************
+# MIDS******************************************************************************************************************************************
+performance = pd.concat([performance, mids_fee], axis=0).fillna(0)
+performance['Fee'] = performance[0]
+performance = performance[['Data_Point', 'Titanium ID', 'Fee']]
+performance = performance.reset_index()
+performance = performance.drop('index', axis=1)
+performance['Data_Point'][3] = 'FRONT'
+#***********************************************************************************************************************************************
+################################################################################################################################################
