@@ -299,7 +299,7 @@ def mid_OC():
 
 def mid_NC():
     summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[5], sheet_name='Summary', sep='\t'),
-                                                       pd.read_excel(files[5], sheet_name='Goals', sep='\t', skiprows=[0,1,2]),
+                                                       pd.read_excel(files[5], sheet_name='Goals', sep='\t', skiprows=[0]),
                                                        pd.read_excel(files[5], sheet_name='RHB1CNT-Credited', sep='\t'),
                                                        pd.read_excel(files[5], sheet_name='RHB2CNT - Credited', sep='\t'),
                                                        pd.read_excel(files[5], sheet_name='AWG - Credited', sep='\t'),
@@ -402,37 +402,7 @@ print('RMS Performance and Employee Count: ',  rms())
 print('EPM Performance and Employee Count: ',  epm())
 print('MID_OC Performance and Employee Count: ', mid_OC())
 print('Performant Performance and Employee Count: ',  per())
-#MIDS*******************************************************************************************************************************************
-# =============================================================================
-# mids = dts.merge(summ, how='inner', on='ID')
-# mids = mids[['Titanium ID', 'ID', 'Data_Point','Front Line Fee']]
-# performance = mids.groupby(pd.Grouper('Data_Point')).count().reset_index()
-# performance = performance[['Data_Point', 'Titanium ID']]
-# ids = summary['ID']
-# mgr = summary['Manager']
-# summids = ids[~ids.isin(mgr)]
-# summids = summids.reset_index()
-# summids = summids.drop('index', axis=1)
-# mids_fee = fee.merge(summids, how='inner', on='ID')
-# mids_fee = mids_fee.loc[mids_fee['Data_Type'] == 'STATS']['Front Line Fee'].sum()
-# mids_fee = round(mids_fee, 4)*.152
-# mids_fee = {'Fee': mids_fee}
-# mids_fee = pd.Series(mids_fee)
-# =============================================================================
-#***********************************************************************************************************************************************
 
-
-#***********************************************************************************************************************************************
-# MIDS******************************************************************************************************************************************
-# =============================================================================
-# performance = pd.concat([performance, mids_fee], axis=0).fillna(0)
-# performance['Fee'] = performance[0]
-# performance = performance[['Data_Point', 'Titanium ID', 'Fee']]
-# performance = performance.reset_index()
-# performance = performance.drop('index', axis=1)
-# performance['Data_Point'][3] = 'FRONT'
-# =============================================================================
-#***********************************************************************************************************************************************
 ################################################################################################################################################
 # Competitive Inventory************************************************************************************************************************
 # =============================================================================
