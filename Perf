@@ -1,51 +1,756 @@
 import pandas as pd
 import datetime as da
 
+calender = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 
+            'October', 'November', 'December']
+today = str(da.date.today())
+#today = input('Date (YYYY-MM-DD): ')
 
-def date(self):
-    calender = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-    today = str(da.date.today())
-    
+def date1():
     last_month = str(int(today[5:7]) - 1)
     if int(last_month) < 10:
         mnth = last_month.replace(last_month, '0' + last_month)
+    else:
+        mnth = last_month
     year = today[:4]
     month = calender[int(mnth) - 1]
     return mnth, year, month
 
-mnth, year, month = date()
-    
-class Performance_Report:  
-    
-    # Class Attributes
-    file_coast = '//gen-filesrv-v01/Manager Trackers/_Final_DTS/DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
-    file_nrs = '//gen-filesrv-v01/NRS/Reports/Final_DTS/2019 DTS/NRS_DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
-    file_rms = '//gen-filesrv-v01/RMS/Reports/Final_DTS/RMS_DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
-    file_epm = '//gen-filesrv-v01/EPM/Reports/Final DTS/DTS_{}_{}_{}_Final EPM.xlsx'.format(year,mnth, month)
-    file_mids = '//gen-filesrv-v01/Mid South/Reports/Final DTS/MIDS_DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
-    file_per = '//gen-filesrv-v01/PER/Final DTS/PER DTS Final - {} {}.xlsx'.format(month, year)
-    
-    files = [file_coast, file_nrs, file_rms, file_epm, file_mids, file_per]
-    
-    def __init__(self, summare, goalz, payerOne, payerTwo, awgs, feee):
-        self.summare = summare
-        self.goalz = goalz
-        self.payerOne = payerOne
-        self.payerTwo = payerTwo
-        self.awgs = awgs
-        self.feee = feee
+mnth, year, month = date1()
 
-class dts:
+file_coast = '//gen-filesrv-v01/Manager Trackers/_Final_DTS/DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
+file_nrs = '//gen-filesrv-v01/NRS/Reports/Final_DTS/2019 DTS/NRS_DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
+file_rms = '//gen-filesrv-v01/RMS/Reports/Final_DTS/RMS_DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
+file_epm = '//gen-filesrv-v01/EPM/Reports/Final DTS/DTS_{}_{}_{}_Final EPM.xlsx'.format(year,mnth, month)
+file_mids1 = '//gen-filesrv-v01/Mid South/Reports/Final DTS/OC_MIDS_DTS_{}_{}_{}_Final.xlsx'.format(year, mnth, month)
+file_mids2 = '//gen-filesrv-v01/Mid South/Reports/Final DTS/NC_MIDS_DTS_{}_{}_{}_Final.xlsx'.format(year, mnth, month)
+file_mids = '//gen-filesrv-v01/Mid South/Reports/Final DTS/MIDS_DTS_{}_{}_{}_Final.xlsx'.format(year,mnth, month)
+file_per = '//gen-filesrv-v01/PER/Final DTS/PER DTS Final - {} {}.xlsx'.format(month, year)
+
+
+if mnth < '10':
+    files = [file_coast, file_nrs, file_rms, file_epm, file_mids, file_per]
+else:
+    files = [file_coast, file_nrs, file_rms, file_epm, file_mids1, file_mids2, file_per]
+
+
+def process(summare, goalz, payerOne, payerTwo, awgs, feee):
+    summary = summare.fillna(0)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+    goals = goalz.fillna(0)
+    payer1 = payerOne.fillna(0)
+    payer2 = payerTwo.fillna(0)
+    awg = awgs.fillna(0)
+    fee = feee.fillna(0)
+    return summary, goals, payer1, payer2, awg, fee
+
+def dts(payer1, payer2, awg, fee):
+    dframes = [payer1, payer2, awg, fee]
+    dts = pd.concat(dframes, axis=0, ignore_index=True).fillna(0)
+    return dts
+
+def coast():
     
-    def get_file(doc):
+    summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[0], sheet_name='Summary', sep='\t'),
+            pd.read_excel(files[0], sheet_name='Goals', sep='\t', skiprows=[0,1,2,3]),
+            pd.read_excel(files[0], sheet_name='RHB1CNT-Credited', sep='\t'),
+            pd.read_excel(files[0], sheet_name='RHB2CNT - Credited', sep='\t'),
+            pd.read_excel(files[0], sheet_name='AWG - Credited', sep='\t'),
+            pd.read_excel(files[0], sheet_name='FRONT(FEE) - Credited', sep='\t')
+            )
+    
+    summ = summary['ID'].drop_duplicates()
+    dts_coast = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium ID', 'ZZUT1USERID':'ID', 'Aggregate_11':'Front Line Fee',
+                 'ZZUH1COMPANY':'Company', 'ZZUT1DATAPOINT':'Data_Point'})
+    
+    dtsC = dts_coast.merge(summ, how='inner', on='ID')
+    dtsC = dtsC[['Titanium ID', 'ID', 'Data_Point', 'Front Line Fee']]
+    performanceC = dtsC.groupby(pd.Grouper('Data_Point')).count().reset_index()
+    performanceC = performanceC.drop(['ID'], axis=1)
+    dtsC_fee = dtsC.query("Data_Point == 'FRONT'")['Front Line Fee'].sum()
+    dtsC_fee = round(dtsC_fee, 4)
+    dtsC_fee = pd.Series(dtsC_fee)
+    performanceC = pd.concat([performanceC, dtsC_fee], axis=0).fillna(0)
+    performanceC = performanceC.drop(3, axis=0)
+    performanceC['Fee'] = performanceC[0]
+    performanceC = performanceC.drop(0, axis=1)
+    performanceC = performanceC.reset_index()
+    performanceC = performanceC.drop(['index', 'Front Line Fee'], axis=1)
+    performanceC['Data_Point'][3] = 'FRONT'
+    
+    def employee_coast(fte=[]):
         
-        for file in doc.files:
-            summare = pd.read_excel(file, sheet_name='Summary', sep='\t')
-            goalz = pd.read_excel(file, sheet_name='Goals', sep='\t', skiprows=[0,1,2,3])
-            payerOne = pd.read_excel(file, sheet_name='RHB1CNT-Credited', sep='\t')
-            payerTwo = pd.read_excel(file, sheet_name='RHB2CNT - Credited', sep='\t')
-            awgs = pd.read_excel(file, sheet_name='AWG - Credited', sep='\t')
-            feee = pd.read_excel(file, sheet_name='FRONT(FEE) - Credited', sep='\t')
+        goals['ID'] = goals['ID'].mask(goals['ID'].isin(goals['Unnamed: 4']),'0')
+        goals['ID'] = goals.loc[goals['F/L'] != 0]['ID']
+        goals['ID'] = goals['ID'].fillna(0)
+    
+        for emp in goals.loc[goals['Position'] != 0]['ID']:
+            if type(emp) == str and emp.startswith('1'):
+                fte.append(emp)
+        return len(fte)
+
+    return performanceC, 'Employee Count: ', employee_coast()
+
+def nrs():
+    
+    summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[1], sheet_name='Summary', sep='\t', skiprows=[0,1,2,3]),
+                                                       pd.read_excel(files[1], sheet_name='Goals', sep='\t', skiprows=[0,1,2]),
+                                                       pd.read_excel(files[1], sheet_name='RHB1CNT - Credited', sep='\t'),
+                                                       pd.read_excel(files[1], sheet_name='RHB2CNT - Credited', sep='\t'),
+                                                       pd.read_excel(files[1], sheet_name='AWG - Credited', sep='\t'),
+                                                       pd.read_excel(files[1], sheet_name='Data', sep='\t')
+                                                       )
+    
+    summ = summary['ID'].drop_duplicates()
+    dtsNRS = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium ID', 'ZZUT1USERID':'ID', 'Aggregate_11':'Front Line Fee',
+                 'ZZUH1COMPANY':'Company', 'ZZUT1DATAPOINT':'Data_Point'})
+    fee_nrs = fee.rename(columns={'Borrower_ID':'Titanium ID', 'Collector':'ID', 'NRS_Fee':'Front Line Fee'})
+
+    dts_nrs = dtsNRS.merge(summ, how='inner', on='ID')
+    dts_nrs = dts_nrs[['Titanium ID', 'Data_Point', 'Front Line Fee']]
+    performanceN = dts_nrs.groupby(pd.Grouper('Data_Point')).count().reset_index()
+    nrs_fee = fee_nrs.loc[fee_nrs['Data_Type'] == 'STATS']['Front Line Fee'].sum()
+    nrs_fee = round(nrs_fee, 4)
+    nrs_fee = pd.Series(nrs_fee)
+    performanceN = pd.concat([performanceN, nrs_fee], axis=0).fillna(0)
+    performanceN['Fee'] = performanceN[0]
+    performanceN = performanceN.drop(3, axis=0)
+    performanceN = performanceN.reset_index()
+    performanceN = performanceN.drop(['index', 0, 'Front Line Fee'], axis=1)
+    performanceN['Data_Point'][3] = 'FRONT'
+    
+    def employee_countNRS(fte=[]):
+        
+        for emp in goals.loc[goals['F/L'] != 0]['ID']:
+            if type(emp) == str and emp.startswith('5'):
+                fte.append(emp)
+        return len(set(fte))
+
+    return  performanceN, 'Employee Count: ', employee_countNRS()
+
+def rms():    
+    
+    summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[2], sheet_name='Summary', sep='\t', skiprows=[0,1,2,3]),
+                                                       pd.read_excel(files[2], sheet_name='Goals', sep='\t', skiprows=[0,1]),
+                                                       pd.read_excel(files[2], sheet_name='RHB1CNT - Credited', sep='\t'),
+                                                       pd.read_excel(files[2], sheet_name='RHB2CNT - Credited', sep='\t'),
+                                                       pd.read_excel(files[2], sheet_name='AWG - Credited', sep='\t'),
+                                                       pd.read_excel(files[2], sheet_name='Data', sep='\t')
+                                                       )
+    
+    summ = summary['ID'].drop_duplicates()
+    dtsRMS = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium ID', 'ZZUT1USERID':'ID', 'Aggregate_11':'Front Line Fee',
+                 'ZZUH1COMPANY':'Company', 'ZZUT1DATAPOINT':'Data_Point'})
+    feeRMS = fee.rename(columns={'RMS_Fee':'Front Line Fee', 'Borrower_ID':'Titanium ID', 'Collector':'ID', 'RMS_Fee':'Front Line Fee'})
+    dts_rms = dtsRMS.merge(summ, how='inner', on='ID')     
+    dts_rms = dts_rms[['Titanium ID','Data_Point', 'ID', 'Front Line Fee']]
+    performance = dts_rms.groupby(pd.Grouper('Data_Point')).count().reset_index()
+    rms_fee = feeRMS.merge(summ, how='inner', on='ID')
+    rms_fee = rms_fee.loc[rms_fee['Data_Type'] == 'STATS']['Front Line Fee'].sum()
+    rms_fee = {'Fee':rms_fee}
+    rms_fee = pd.Series(rms_fee)
+    performanceR = pd.concat([performance, rms_fee], axis=0).fillna(0)
+    performanceR = performanceR.drop(3, axis=0)
+    performanceR['Fee'] = performanceR[0]
+    performanceR = performanceR.reset_index()
+    performanceR = performanceR.drop(['index', 'Front Line Fee', 'ID', 0], axis=1)
+    performanceR['Data_Point'][3] = 'FRONT'
+    
+    def employee_countRMS(fte=[]):
+        
+        for emp in summary.loc[summary['Name'] != 'Total.']['ID']:
+            if type(emp) == str and emp.startswith('6'):
+                fte.append(emp)
+        return len(set(fte))
+    
+    return performanceR, 'Employee Count: ', employee_countRMS()
+
+def epm():
+    
+    summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[3], sheet_name='Summary', sep='\t'),
+                                                       pd.read_excel(files[3], sheet_name='Goals', sep='\t', skiprows=[0,1,2,3]),
+                                                       pd.read_excel(files[3], sheet_name='RHB1CNT-Credited', sep='\t'),
+                                                       pd.read_excel(files[3], sheet_name='RHB2CNT - Credited', sep='\t'),
+                                                       pd.read_excel(files[3], sheet_name='AWG - Credited', sep='\t'),
+                                                       pd.read_excel(files[3], sheet_name='STATS - Credited', sep='\t')
+                                                       )
+    
+    summ = summary['ID'].drop_duplicates()
+    dtsEPM = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium ID', 'ZZUT1USERID':'ID', 'Aggregate_11':'Front Line Fee',
+                 'ZZUH1COMPANY':'Company', 'ZZUT1DATAPOINT':'Data_Point'})    
+    feeEPM = fee.rename(columns={'Borrower_ID':'Titanium ID', 'Collector':'ID'})
+    
+    epm = dtsEPM.merge(summ, how='inner', on='ID')
+    performance = epm.groupby(pd.Grouper('Data_Point')).count().reset_index()
+    performance = performance[['Data_Point', 'Titanium ID']]
+    ids = summary['ID']
+    mgr = summary['Manager']
+    summids = ids[~ids.isin(mgr)]
+    epm_fee = feeEPM.merge(summids, how='inner', on='ID')
+    epm_fee = epm_fee.loc[epm_fee['Data_Type'] == 'STATS']['Amount'].sum()
+    epm_fee = round(epm_fee, 4)*.152
+    epm_fee = {'Fee': epm_fee}
+    epm_fee = pd.Series(epm_fee)
+    performanceE = pd.concat([performance, epm_fee], axis=0).fillna(0)
+    performanceE = performanceE.drop(3, axis=0)
+    performanceE['Fee'] = performanceE[0]
+    performanceE = performanceE.reset_index()
+    performanceE = performanceE.drop([0, 'index'],  axis=1)
+    performanceE = performanceE[['Data_Point', 'Titanium ID', 'Fee']]
+    performanceE['Data_Point'][3] = 'FRONT'
+    
+    def employee_countEPM(fte=[]):
+        
+        goals['ID'] = goals['ID'].mask(goals['ID'].isin(goals['MGR']),'0')
+        goals['ID'] = goals.loc[goals['F/L'] != 0]['ID']
+        goals['ID'] = goals['ID'].fillna(0)
+    
+        for emp in goals['ID']:
+            if type(emp) == str and emp.startswith('7') and emp != '7NBR' and emp != '7MBC':
+                fte.append(emp)
+        return len(fte)
+    
+    return performanceE, 'Employee Count: ', employee_countEPM()
+
+if mnth >= '10':
+    def mid_OC():
+        
+        summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[4], sheet_name='Summary', sep='\t'),
+                                                           pd.read_excel(files[4], sheet_name='Goals', sep='\t', skiprows=[0,1,2]),
+                                                           pd.read_excel(files[4], sheet_name='RHB1CNT-Credited', sep='\t'),
+                                                           pd.read_excel(files[4], sheet_name='RHB2CNT - Credited', sep='\t'),
+                                                           pd.read_excel(files[4], sheet_name='AWG - Credited', sep='\t'),
+                                                           pd.read_excel(files[4], sheet_name='STATS - Credited', sep='\t')
+                                                           )
+        ids = summary['ID']
+        mgr = summary['Manager']
+        summ = summary['ID'].drop_duplicates()
+        summids = ids[~ids.isin(mgr)].drop_duplicates()
+        
+        dts_mid = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium ID', 'ZZUT1DATAPOINT':'Data_Point', 'ZZUT1USERID':'ID'})
+        mid_fee = fee.rename(columns={'Borrower_ID':'Titanium ID', 'Collector':'ID'})
+        
+        mid1 = dts_mid.merge(summ, how='inner', on='ID')
+        mid1 = mid1[['Titanium ID', 'ID', 'Manager', 'Data_Type',  'Data_Point']]
+        performanceM1 = mid1.groupby(pd.Grouper('Data_Point')).count().reset_index()
+        mid1_fee = mid_fee.merge(summids, how='inner', on='ID')
+        mid1_fee = mid1_fee.loc[mid1_fee['Data_Type'] == 'STATS']['Amount'].sum()
+        mid1_fee = round(mid1_fee, 4)*.152
+        mid1_fee = {'Fee': mid1_fee}
+        mid1_fee = pd.Series(mid1_fee)
+        performanceM1 = pd.concat([performanceM1, mid1_fee], axis=0).fillna(0)
+        performanceM1 = performanceM1.drop(['Data_Type', 'ID', 'Manager'], axis=1)
+        performanceM1['Front Line Fee'] = performanceM1[0]
+        performanceM1 = performanceM1.drop(0, axis=1)
+        performanceM1 = performanceM1.drop(3, axis=0)
+        performanceM1 = performanceM1.reset_index()
+        performanceM1 = performanceM1.drop('index', axis=1)
+        
+        def employee_countMID1(fte=[]):
             
+            goals['ID'] = goals['ID'].mask(goals['ID'].isin(goals['MGR']),'0')
+            goals['ID'] = goals.loc[goals['F/L'] != 0]['ID']
+            goals['ID'] = goals['ID'].fillna(0)
+        
+            for emp in goals['ID']:
+                if type(emp) == str and emp.startswith('9'):
+                    fte.append(emp)
+            return len(fte)
+        
+        return performanceM1, 'Employee Count: ', employee_countMID1()
+    
+    
+    def mid_NC():
+        
+        summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[5], sheet_name='Summary', sep='\t'),
+                                                           pd.read_excel(files[5], sheet_name='Goals', sep='\t', skiprows=[0]),
+                                                           pd.read_excel(files[5], sheet_name='RHB1CNT-Credited', sep='\t'),
+                                                           pd.read_excel(files[5], sheet_name='RHB2CNT - Credited', sep='\t'),
+                                                           pd.read_excel(files[5], sheet_name='AWG - Credited', sep='\t'),
+                                                           pd.read_excel(files[5], sheet_name='STATS - Credited', sep='\t')
+                                                           )
+    
+        summ = summary['ID'].drop_duplicates()
+        dtsNC = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium ID', 'ZZUT1DATAPOINT':'Data_Point', 'ZZUT1USERID':'ID'})
+        feeNC = fee.rename(columns={'Borrower_ID':'Titanium ID', 'Collector':'ID'})
+        
+        mid2 = dtsNC.merge(summ, how='inner', on='ID')
+        mid2 = mid2[['Titanium ID', 'Data_Point']]
+        performanceM2 = mid2.groupby(pd.Grouper('Data_Point')).count().reset_index()
+        ids = summary['ID']
+        mgr = summary['Manager']
+        summids = ids[~ids.isin(mgr)]
+        mid2_fee = feeNC.merge(summids, how='inner', on='ID')
+        mid2_fee = mid2_fee.loc[mid2_fee['Data_Type'] == 'STATS']['Amount'].sum()
+        mid2_fee = round(mid2_fee, 4)*.152
+        mid2_fee = {'Fee': mid2_fee}
+        mid2_fee = pd.Series(mid2_fee)
+        performanceM2 = pd.concat([performanceM2, mid2_fee], axis=0).fillna(0)
+        performanceM2['Front Line Fee'] = performanceM2[0]
+        performanceM2 = performanceM2.drop(3, axis=0)
+        performanceM2 = performanceM2.reset_index()
+        performanceM2 = performanceM2.drop([0, 'index'], axis=1)
+        performanceM2['Data_Point'][3] = 'FRONT'
+        
+        def employee_countMID2(fte=[]):
             
+            goals['ID'] = goals['ID'].mask(goals['ID'].isin(goals['MGR']),'0')
+            goals['ID'] = goals.loc[goals['F/L'] != 0]['ID']
+            goals['ID'] = goals['ID'].fillna(0)
+        
+            for emp in goals['ID']:
+                if type(emp) == str and emp.startswith('9'):
+                    fte.append(emp)
+            return len(fte)
+        
+        return  performanceM2, 'Employee Count', employee_countMID2()
+# =============================================================================
+# else:
+#     
+#     def MIDS():
+#         
+#         summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[5], sheet_name='Summary', sep='\t'),
+#                                                            pd.read_excel(files[5], sheet_name='Goals', sep='\t', skiprows=[0]),
+#                                                            pd.read_excel(files[5], sheet_name='RHB1CNT-Credited', sep='\t'),
+#                                                            pd.read_excel(files[5], sheet_name='RHB2CNT - Credited', sep='\t'),
+#                                                            pd.read_excel(files[5], sheet_name='AWG - Credited', sep='\t'),
+#                                                            pd.read_excel(files[5], sheet_name='STATS - Credited', sep='\t')
+#                                                            )
+#     
+#         summ = summary['ID'].drop_duplicates()
+#         dtsNC = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium ID', 'ZZUT1DATAPOINT':'Data_Point', 'ZZUT1USERID':'ID'})
+#         feeNC = fee.rename(columns={'Borrower_ID':'Titanium ID', 'Collector':'ID'})
+#         
+#         mid2 = dtsNC.merge(summ, how='inner', on='ID')
+#         mid2 = mid2[['Titanium ID', 'Data_Point']]
+#         performanceM2 = mid2.groupby(pd.Grouper('Data_Point')).count().reset_index()
+#         ids = summary['ID']
+#         mgr = summary['Manager']
+#         summids = ids[~ids.isin(mgr)]
+#         mid2_fee = feeNC.merge(summids, how='inner', on='ID')
+#         mid2_fee = mid2_fee.loc[mid2_fee['Data_Type'] == 'STATS']['Amount'].sum()
+#         mid2_fee = round(mid2_fee, 4)*.152
+#         mid2_fee = {'Fee': mid2_fee}
+#         mid2_fee = pd.Series(mid2_fee)
+#         performanceM2 = pd.concat([performanceM2, mid2_fee], axis=0).fillna(0)
+#         performanceM2['Front Line Fee'] = performanceM2[0]
+#         performanceM2 = performanceM2.drop(3, axis=0)
+#         performanceM2 = performanceM2.reset_index()
+#         performanceM2 = performanceM2.drop([0, 'index'], axis=1)
+#         performanceM2['Data_Point'][3] = 'FRONT'
+#         
+#         def employee_countMIDS(fte=[]):
+#             
+#             goals['ID'] = goals['ID'].mask(goals['ID'].isin(goals['MGR']),'0')
+#             goals['ID'] = goals.loc[goals['F/L'] != 0]['ID']
+#             goals['ID'] = goals['ID'].fillna(0)
+#         
+#             for emp in goals['ID']:
+#                 if type(emp) == str and emp.startswith('9'):
+#                     fte.append(emp)
+#             return len(fte)
+#         
+#         return  performanceM2, 'Employee Count', employee_countMID2()
+#             
+# =============================================================================
+            
+    
+def per():
+    
+    summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[6], sheet_name='Summary', sep='\t'),
+                                                       pd.read_excel(files[6], sheet_name='Goals', sep='\t', skiprows=[0,1,2,3,4]),
+                                                       pd.read_excel(files[6], sheet_name='RHB1CNT-Credited', sep='\t'),
+                                                       pd.read_excel(files[6], sheet_name='RHB2CNT - Credited', sep='\t'),
+                                                       pd.read_excel(files[6], sheet_name='AWG - Credited', sep='\t'),
+                                                       pd.read_excel(files[6], sheet_name='STATS - Credited', sep='\t')
+                                                       )
+
+    summ = summary['ID'].drop_duplicates()
+    dtsPER = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium ID', 'ZZUT1USERID':'ID', 'Aggregate_11':'Front Line Fee',
+                 'ZZUH1COMPANY':'Company', 'ZZUT1DATAPOINT':'Data_Point'})
+    
+    per = dtsPER.merge(summ, how='inner', on='ID')
+    per = per[['Titanium ID','Data_Point']]
+    performanceP = per.groupby(pd.Grouper('Data_Point')).count().reset_index()
+    per_fee = summary['Frontline'][1]
+    per_fee = round(per_fee, 4)
+    per_fee = {'Fee': per_fee}
+    per_fee = pd.Series(per_fee)
+    performanceP = pd.concat([performanceP, per_fee], axis=0).fillna(0)
+    performanceP['Fee'] = performanceP[0]
+    performanceP = performanceP.drop(3, axis=0)
+    performanceP = performanceP.reset_index()
+    performanceP = performanceP.drop(['index', 0], axis=1)
+    performanceP['Data_Point'][3] = 'FRONT'
+    
+    def employee_countPER(fte=[]):
+        
+        for emp in goals.loc[goals['F/L'] != 0]['ID']:
+            if type(emp) == str and emp.startswith('8'):
+                fte.append(emp)
+        return len(set(fte)) - 1  
+    
+    return performanceP, 'Employee Count: ', employee_countPER()
+
+print('Coast Performance and Employee Count: ', coast())
+print('NRS Performance and Employee Count: ', nrs())
+print('RMS Performance and Employee Count: ',  rms())
+print('EPM Performance and Employee Count: ',  epm())
+print('MID_OC Performance and Employee Count: ', mid_OC())
+print('MID_NC Performance and Employee Count: ', mid_NC())
+print('Performant Performance and Employee Count: ',  per())
+
+
+################################################################################################################################################
+# Competitive Inventory*************************************************************************************************************************
+df = pd.read_excel('//gen-filesrv-v01/MatthewO/Cory/EXCEL/PY/Comp_Inv.xlsx', sep='\t').fillna(0)
+df = df.rename(columns={'TitaniumID':'Titanium ID', 'User_ID':'ID', 'Collector':'ID'})
+df = df[['Titanium_ID', 'ID']]
+
+def comp_coast():
+    
+    
+    summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[0], sheet_name='Summary', sep='\t'),
+                                                       pd.read_excel(files[0], sheet_name='Goals', sep='\t', skiprows=[0,1,2,3,4]),
+                                                       pd.read_excel(files[0], sheet_name='RHB1CNT-Credited', sep='\t'),
+                                                       pd.read_excel(files[0], sheet_name='RHB2CNT - Credited', sep='\t'),
+                                                       pd.read_excel(files[0], sheet_name='AWG - Credited', sep='\t'),
+                                                       pd.read_excel(files[0], sheet_name='FRONT(FEE) - Credited', sep='\t')
+                                                       )
+#    summ = summary['ID'].drop_duplicates()
+    ids = summary['ID']
+    mgr = summary['Manager']
+    summids = ids[~ids.isin(mgr)].drop_duplicates()
+    
+#    coast = dts[payer1, payer2, awg, fee].loc[dts[payer1, payer2, awg, fee]['Company'] == 'COAST']    
+    coast_dts = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium_ID', 'ZZUT1USERID':'ID', 'Aggregate_11':'Front Line Fee',
+             'ZZUH1COMPANY':'Company', 'ZZUT1DATAPOINT':'Data_Point', 'ZZUH1COMPANY':'Company'})
+    coast = coast_dts.loc[coast_dts['Company'] == 'COAST']
+    
+    comp_coasti = coast.merge(summids, how='inner', on='ID')
+    comp_coastf = comp_coasti.merge(df['Titanium_ID'].drop_duplicates(), how='inner', on='Titanium_ID')
+    fee = fee.rename(columns={'Aggregate_11':'Front Line Fee', 'ZZUT1USERID': 'ID', 'ZZUT1BORID':'Titanium_ID'})
+    
+    performanceC = comp_coastf.groupby(pd.Grouper('Data_Point')).count().reset_index()
+    performanceC = performanceC[['Data_Point', 'Titanium_ID', 'Front Line Fee']]
+    
+    coast_fee = fee.merge(summids, how='inner', on='ID')
+    coast_fee = coast_fee.merge(df['Titanium_ID'].drop_duplicates(), how='inner', on='Titanium_ID')
+    coast_fee = round(coast_fee['Front Line Fee'].sum(), 4)
+    coast_fee = {'Fee': coast_fee}
+    coast_fee = pd.Series(coast_fee)
+    
+    performance_comp = pd.concat([performanceC, coast_fee], axis=0).fillna(0)
+    performance_comp = performance_comp.reset_index()
+    performance_comp['Data_Point'][4] = 'FRONT'
+    performance_comp['Front Line Fee'] = performance_comp[0]
+    performance_comp = performance_comp.drop([0, 'index'],  axis=1)
+    performance_comp = performance_comp.drop([1], axis=0)
+   
+    return performance_comp
+
+
+def comp_NRS():
+    
+    summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[1], sheet_name='Summary', sep='\t', skiprows=[0,1,2,3]),
+                                                       pd.read_excel(files[1], sheet_name='Goals', sep='\t', skiprows=[0,1,2]),
+                                                       pd.read_excel(files[1], sheet_name='RHB1CNT - Credited', sep='\t'),
+                                                       pd.read_excel(files[1], sheet_name='RHB2CNT - Credited', sep='\t'),
+                                                       pd.read_excel(files[1], sheet_name='AWG - Credited', sep='\t'),
+                                                       pd.read_excel(files[1], sheet_name='Data', sep='\t')
+                                                       )
+    
+    summ = summary['ID'].drop_duplicates()
+    dtsNRS = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium_ID', 'ZZUT1USERID':'ID', 'Aggregate_11':'Front Line Fee', 
+                'ZZUH1COMPANY':'Compny', 'ZZUT1DATAPOINT':'Data_Point'})
+    dtsNRS = dtsNRS[['Titanium_ID', 'Compny', 'Front Line Fee', 'Data_Point', 'ID']]
+    dts_nrs = dtsNRS.loc[dtsNRS['Compny'] == 'NRS']
+    comp_nrsi = dts_nrs.merge(summ, how='inner', on='ID')
+    comp_nrsf = comp_nrsi.merge(df['Titanium_ID'].drop_duplicates(), how='inner', on='Titanium_ID')
+    fee = fee.rename(columns={'Borrower_ID':'Titanium_ID', 'Collector':'ID', 'NRS_Fee':'Front Line Fee', 'ZZUH1COMPANY':'Company'})
+    feeN = fee.loc[fee['Company'] == 'NRS']
+
+    performanceN = comp_nrsf.groupby(pd.Grouper('Data_Point')).count().reset_index()
+    performanceN = performanceN[['Data_Point', 'Titanium_ID']]
+    nrs_fee = feeN.merge(summ, how='inner', on='ID')
+    nrs_fee = nrs_fee.merge(df['Titanium_ID'].drop_duplicates(), how='inner', on='Titanium_ID')
+    nrs_fee = round(nrs_fee['Front Line Fee'].sum(), 4)
+    nrs_fee = pd.Series(nrs_fee)
+    
+    performanceN = pd.concat([performanceN, nrs_fee], axis=0).fillna(0)
+    performanceN['Fee'] = performanceN[0]
+    performanceN = performanceN.reset_index()
+    performanceN = performanceN.drop(['index', 0], axis=1)
+    performanceN['Data_Point'][4] = 'FRONT'
+    
+    return performanceN
+    
+def comp_RMS():
+    
+    summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[2], sheet_name='Summary', sep='\t', skiprows=[0,1,2,3]),
+                                                   pd.read_excel(files[2], sheet_name='Goals', sep='\t', skiprows=[0,1]),
+                                                   pd.read_excel(files[2], sheet_name='RHB1CNT - Credited', sep='\t'),
+                                                   pd.read_excel(files[2], sheet_name='RHB2CNT - Credited', sep='\t'),
+                                                   pd.read_excel(files[2], sheet_name='AWG - Credited', sep='\t'),
+                                                   pd.read_excel(files[2], sheet_name='Data', sep='\t')
+                                                   )
+    
+    summ = summary['ID'].drop_duplicates()
+    dtsRMS = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium_ID', 'ZZUT1USERID':'ID', 'Aggregate_11':'Front Line Fee',
+                 'ZZUH1COMPANY':'Compny', 'ZZUT1DATAPOINT':'Data_Point'})    
+    dts_rms = dtsRMS.loc[dtsRMS['Compny'] == 'RMS']
+    comp_rmsi = dts_rms.merge(summ, how='inner', on='ID')
+    comp_rmsf = comp_rmsi.merge(df['Titanium_ID'].drop_duplicates(), how='inner', on='Titanium_ID')
+    fee = fee.rename(columns={'Borrower_ID':'Titanium_ID', 'Collector':'ID', 'RMS_Fee':'Front Line Fee'})
+    feeR = fee.loc[(fee['Company'] == 'RMS') & (fee['Data_Type'] == 'STATS')]
+
+    performanceR = comp_rmsf.groupby(pd.Grouper('Data_Point')).count().reset_index()
+    performanceR = performanceR[['Data_Point', 'Titanium_ID', 'Front Line Fee']]
+    rms_fee = feeR.merge(summ, how='inner', on='ID')
+    rms_fee = rms_fee.merge(df['Titanium_ID'].drop_duplicates(), how='inner', on='Titanium_ID')
+    rms_fee = round(rms_fee['Front Line Fee'].sum(), 4)
+    rms_fee = pd.Series(rms_fee)
+    
+    performanceR = pd.concat([performanceR, rms_fee], axis=0).fillna(0)
+    performanceR['Fee'] = performanceR[0]
+    performanceR = performanceR.reset_index()
+    performanceR = performanceR.drop(['Front Line Fee', 'index', 0], axis=1)
+    performanceR['Data_Point'][3] = 'FRONT'
+    
+    return performanceR
+
+def comp_EPM():
+    
+    summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[3], sheet_name='Summary', sep='\t'),
+                                                       pd.read_excel(files[3], sheet_name='Goals', sep='\t', skiprows=[0,1,2,3]),
+                                                       pd.read_excel(files[3], sheet_name='RHB1CNT-Credited', sep='\t'),
+                                                       pd.read_excel(files[3], sheet_name='RHB2CNT - Credited', sep='\t'),
+                                                       pd.read_excel(files[3], sheet_name='AWG - Credited', sep='\t'),
+                                                       pd.read_excel(files[3], sheet_name='STATS - Credited', sep='\t')
+                                                       )
+    
+    summ = summary['ID'].drop_duplicates()
+    ids = summary['ID']
+    mgr = summary['Manager']
+    summids = ids[~ids.isin(mgr)]
+    dtsEPM = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium_ID', 'ZZUT1USERID':'ID', 'Amount':'Front Line Fee',
+                 'ZZUH1COMPANY':'Compny', 'ZZUT1DATAPOINT':'Data_Point'})    
+    dtsEPM = dtsEPM.loc[dtsEPM['Compny'] == 'EPM']
+    epm = dtsEPM.merge(summ, how='inner', on='ID')
+    epm = epm.merge(df['Titanium_ID'].drop_duplicates(), how='inner', on='Titanium_ID')
+    fee = fee.loc[fee['Company'] == 'EPM']
+    feeEPM = fee.rename(columns={'Borrower_ID':'Titanium_ID', 'Collector':'ID', 'Amount':'Front Line Fee'})
+    feeEPM = feeEPM.loc[feeEPM['Data_Type'] == 'STATS']
+    
+    performance = epm.groupby(pd.Grouper('Data_Point')).count().reset_index()
+    performance = performance[['Data_Point', 'Titanium_ID']]
+    epm_fee = feeEPM.merge(summids, how='inner', on='ID')
+    epm_fee = epm_fee.merge(df['Titanium_ID'].drop_duplicates(), how='inner', on='Titanium_ID')
+    epm_fee = epm_fee['Front Line Fee'].sum()
+    epm_fee = round(epm_fee, 4)*.152
+    epm_fee = {'Fee': epm_fee}
+    epm_fee = pd.Series(epm_fee)
+    performanceE = pd.concat([performance, epm_fee], axis=0).fillna(0)
+    performanceE['Fee'] = performanceE[0]
+    performanceE = performanceE.reset_index()
+    performanceE = performanceE.drop([0, 'index'],  axis=1)
+    performanceE['Data_Point'][3] = 'FRONT'
+    
+    return performanceE
+
+def comp_MID_OC():
+    
+    summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[4], sheet_name='Summary', sep='\t'),
+                                                       pd.read_excel(files[4], sheet_name='Goals', sep='\t', skiprows=[0,1,2]),
+                                                       pd.read_excel(files[4], sheet_name='RHB1CNT-Credited', sep='\t'),
+                                                       pd.read_excel(files[4], sheet_name='RHB2CNT - Credited', sep='\t'),
+                                                       pd.read_excel(files[4], sheet_name='AWG - Credited', sep='\t'),
+                                                       pd.read_excel(files[4], sheet_name='STATS - Credited', sep='\t')
+                                                       )
+    ids = summary['ID']
+    mgr = summary['Manager']
+    summ = summary['ID'].drop_duplicates()
+    summids = ids[~ids.isin(mgr)].drop_duplicates()
+    
+    dts_mid = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium_ID', 'ZZUT1DATAPOINT':'Data_Point', 'ZZUT1USERID':'ID',
+                 'ZZUH1COMPANY':'Compny'})
+    mids1 = dts_mid.loc[dts_mid['Compny'] == 'MIDS']
+    
+    mid_fee = fee.rename(columns={'Borrower_ID':'Titanium_ID', 'Collector':'ID', 'Amount':'Front Line Fee', 'ZZUH1COMPANY':'Company'})
+    mid_fee = mid_fee.loc[(mid_fee['Company'] == 'MIDS') & (mid_fee['Data_Type'] == 'STATS')]
+    mid1_fee = mid_fee.merge(summids, how='inner', on='ID')
+    mid1_fee = mid1_fee.merge(df['Titanium_ID'].drop_duplicates(), how='inner', on='Titanium_ID')
+    
+    mid1 = mids1.merge(summ, how='inner', on='ID')
+    comp_mid1 = mid1.merge(df['Titanium_ID'].drop_duplicates(), how='inner', on='Titanium_ID')
+    comp_mid1 = comp_mid1[['Titanium_ID', 'Data_Point']]
+    performanceM1 = comp_mid1.groupby(pd.Grouper('Data_Point')).count().reset_index()
+    
+    mid1_fee = round(mid1_fee['Front Line Fee'].sum(), 4)*.152
+    mid1_fee = {'Fee': mid1_fee}
+    mid1_fee = pd.Series(mid1_fee)
+    performanceM1 = pd.concat([performanceM1, mid1_fee], axis=0).fillna(0)
+    performanceM1['Fee'] = performanceM1[0]
+    performanceM1 = performanceM1.reset_index()
+    performanceM1 = performanceM1.drop([0, 'index'], axis=1)
+    performanceM1['Data_Point'][3] = 'FRONT'
+    
+    return performanceM1
+
+def comp_MID_NC():
+    
+    summary, goals, payer1, payer2, awg, fee = process(pd.read_excel(files[5], sheet_name='Summary', sep='\t'),
+                                                       pd.read_excel(files[5], sheet_name='Goals', sep='\t', skiprows=[0]),
+                                                       pd.read_excel(files[5], sheet_name='RHB1CNT-Credited', sep='\t'),
+                                                       pd.read_excel(files[5], sheet_name='RHB2CNT - Credited', sep='\t'),
+                                                       pd.read_excel(files[5], sheet_name='AWG - Credited', sep='\t'),
+                                                       pd.read_excel(files[5], sheet_name='STATS - Credited', sep='\t')
+                                                       )
+    
+    summ = summary['ID'].drop_duplicates()
+    ids = summary['ID']
+    mgr = summary['Manager']
+    summids = ids[~ids.isin(mgr)]
+    dtsNC = dts(payer1, payer2, awg, fee).rename(columns={'ZZUT1BORID':'Titanium_ID', 'ZZUT1DATAPOINT':'Data_Point', 'ZZUT1USERID':'ID',
+               'ZZUH1COMPANY':'Compny'})
+    dts_nc = dtsNC.loc[dtsNC['Compny'] == 'MIDS']
+    
+    feeNC = fee.rename(columns={'Borrower_ID':'Titanium_ID', 'Collector':'ID', 'Amount':'Front Line Fee', 'ZZUH1COMPANY':'Company'})
+    mid_fee = feeNC.loc[(feeNC['Company'] == 'MIDS') & (feeNC['Data_Type'] == 'STATS')]
+    mid2_fee = mid_fee.merge(summids, how='inner', on='ID')    
+    mid2_fee = mid2_fee.merge(df['Titanium_ID'].drop_duplicates(), how='inner', on='Titanium_ID')
+    
+    mid2 = dts_nc.merge(summ, how='inner', on='ID')
+    mid2 = mid2.merge(df['Titanium_ID'].drop_duplicates(), how='inner', on='Titanium_ID')
+    mid2 = mid2[['Titanium_ID', 'Data_Point']]
+    performanceM2 = mid2.groupby(pd.Grouper('Data_Point')).count().reset_index()
+    
+    mid2_fee = mid2_fee['Front Line Fee'].sum()
+    mid2_fee = round(mid2_fee, 4)*.152
+    mid2_fee = {'Fee': mid2_fee}
+    mid2_fee = pd.Series(mid2_fee)
+    performanceM2 = pd.concat([performanceM2, mid2_fee], axis=0).fillna(0)
+    performanceM2['Fee'] = performanceM2[0]
+    performanceM2 = performanceM2.reset_index()
+    performanceM2 = performanceM2.drop(['index', 0], axis=1)
+    performanceM2['Data_Point'][3] = 'FRONT'
+    
+    return performanceM2
+
+print('Coast Competative Performance: ', comp_coast())
+print('NRS CompetativePerformance: ', comp_NRS())
+print('RMS CompetativePerformance: ',  comp_RMS())
+print('EPM CompetativePerformance: ',  comp_EPM())
+print('MID_OC CompetativePerformance: ', comp_MID_OC())
+print('MID_NC CompetativePerformance: ', comp_MID_NC())
+
+#############################################################################################################################################################
+# All Inventory number:
+df_all = pd.read_excel('')
+
+
+# Competative Inventory Numbers:
+df_comp = pd.read_excel('//gen-filesrv-v01/MatthewO/Cory/EXCEL/PY/Comp_Inv.xlsx', sep='\t')
+df_comp = df_comp.rename(columns={'User_ID':'ID', 'TitaniumID':'Titanium_ID'})
+df_c = df_comp[(df_comp.Company != 'REVCREST') & (df_comp.Company != 'PER')].fillna(0)
+df14 = df_c.loc[df_comp['Contract'] == 'ED14'].fillna(0)
+
+rehab = ['20FALL','60FALL', 'ADOI','ADOI1','ADOI2','ADOI3','ADOI4','ADOI5','ADOI6','ADOI7','ADOI8','ADOIER','ADOIMIS','CCERROR','CCRERUN','GARRHB',
+         'PPA','PROOF1', 'REHAB','REHAB1','REHAB2','REHAB3','REHAB4','REHAB5','REHAB6','REHAB7','REHAB8','REHABPROM','REHABREV','RHBAUDIT','RHBFUND',
+         'RHBLETOUT','RHBLOWER','RHBNEW','RHBPAID','RHBPROOF','RHBRAISE','RHFWD','VPY','WG1RHB']
+AWG = ['AWG','GAR','GARRHB','HR1','HR2','HR3','LEX','LEX99','NEWGARN','OW1','OW2', 'WG1','WG1RHB']
+    
+def competative_inv():
+    comp_inv = df14[['Titanium_ID', 'Company']].groupby(pd.Grouper('Company')).count().reset_index()
+    comp_inv = comp_inv.drop(5, axis=0)
+    
+    total = comp_inv['Titanium_ID'].sum()
+    percent = []
+    for i in comp_inv['Titanium_ID']:
+        percent.append(round((i / total)*100, 2))
+    percent = pd.Series(percent)
+    comp_Inv = pd.concat([comp_inv, percent], axis=1).fillna(0)
+    comp_Inv['Percentage %'] = comp_Inv[0]
+    comp_Inv = comp_Inv.reset_index()
+    comp_Inv = comp_Inv.drop(['index',0], axis=1)
+    comp_Inv = comp_Inv.drop([5,6], axis=0)
+    return comp_Inv
+
+def ceaseD():
+    comp1 = df14.loc[(df14['Status'] != 'CEASE') & (df14['Status'] != 'DCORDER')]
+    comp1 = comp1[['Titanium_ID', 'Company']].groupby(pd.Grouper('Company')).count().reset_index()
+    comp1 = comp1.drop(6, axis=0)
+    
+    total = comp1['Titanium_ID'].sum()
+    percent = []
+    for i in comp1['Titanium_ID']:
+        percent.append(round((i / total)*100, 2))
+    percent = pd.Series(percent)
+    ceased = pd.concat([comp1, percent], axis=1)
+    ceased['Percentage %'] = ceased[0]
+    ceased = ceased.reset_index()
+    ceased = ceased.drop(['index', 0], axis=1)
+    return ceased
+
+def rehabilitations():
+
+    rehabs = pd.Series(rehab)
+    rehab_inv = df14[df14['Status'].isin(rehabs)]
+    rehab_inv = rehab_inv[['Titanium_ID', 'Company']].groupby(pd.Grouper('Company')).count().reset_index()
+    rehab_inv = rehab_inv.drop(6, axis=0)
+    
+    total = rehab_inv['Titanium_ID'].sum()
+    percent = []
+    for i in rehab_inv['Titanium_ID']:
+        percent.append(round((i / total)*100, 2))
+    percent = pd.Series(percent)
+    rehab_Inv = pd.concat([rehab_inv, percent], axis=1)
+    rehab_Inv['Percentage %'] = rehab_Inv[0]
+    rehab_Inv = rehab_Inv.reset_index()
+    rehab_Inv = rehab_Inv.drop(['index', 0], axis=1)
+    
+    return rehab_Inv
+
+def garnishments():
+
+    garns = pd.Series(AWG)
+    garn_inv = df14[df14['Status'].isin(garns)]
+    garn_inv = garn_inv[['Titanium_ID', 'Company']].groupby(pd.Grouper('Company')).count().reset_index()
+    
+    total = garn_inv['Titanium_ID'].sum()
+    percent = []
+    for i in garn_inv['Titanium_ID']:
+        percent.append(round((i / total)*100, 2))
+    percent = pd.Series(percent)
+    garn_Inv = pd.concat([garn_inv, percent], axis=1)
+    garn_Inv['Percentage %'] = garn_Inv[0]
+    garn_Inv = garn_Inv.reset_index()
+    garn_Inv = garn_Inv.drop(['index', 0], axis=1)
+    return garn_Inv
+    
+def rest():
+    the_rest = []
+    for i in list(df14['Status'].drop_duplicates()):
+        if (i not in rehab) and (i not in AWG):
+            the_rest.append(i)
+    the_rest = pd.Series(the_rest)
+    other_inv = df14[df14['Status'].isin(the_rest)]
+    other_inv = other_inv[['Titanium_ID', 'Company']].groupby(pd.Grouper('Company')).count().reset_index()
+    
+    total = other_inv['Titanium_ID'].sum()
+    percent = []
+    for i in other_inv['Titanium_ID']:
+        percent.append(round((i / total)*100, 2))
+    percent = pd.Series(percent)
+    other_Inv = pd.concat([other_inv, percent], axis=1)
+    other_Inv['Percentage %'] = other_Inv[0]
+    other_Inv = other_Inv.reset_index()
+    other_Inv = other_Inv.drop(['index', 0], axis=1)
+    return other_Inv
+
+print('Competative Inventories: \n', competative_inv())
+print('Total Competative Inventories: \n', competative_inv()['Titanium_ID'].sum())
+print('Competative Rehabs: \n', rehabilitations())
+print('Competative Garnishments: \n', garnishments())
+print('The rest of Competative Accounts: \n', rest())
+
 
